@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="stage">
+      <div id="menu" class="hidden">
+        <button class="mi" data-action="paste">📋 Paste calendar link</button>
+        <button class="mi" data-action="next">📅 Next event</button>
+        <button class="mi" data-action="today">🗓️ Today's events</button>
+        <button class="mi" data-action="quote">💬 Random quote</button>
+        <button class="mi" data-action="fish">🐟 Next fish</button>
+        <button class="mi" id="mute-item" data-action="mute">🔊 Sound: on</button>
+        <button class="mi" data-action="dismiss">💤 Dismiss bubble</button>
+        <button class="mi" data-action="quit">✕ Quit</button>
+      </div>
+      <div id="bubble" class="hidden">
+        <span id="bubble-text"></span>
+        <div id="bubble-tail"></div>
+      </div>
+      <img id="pet" src="fish.png" alt="fish" />
+    </div>
+    <script src="node_modules/marked/lib/marked.umd.js"></script>
+    <script src="renderer.js"></script>
+  </body>
+</html>

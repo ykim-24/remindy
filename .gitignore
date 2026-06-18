@@ -1,0 +1,12 @@
+# dependencies
+node_modules/
+
+# local secret: your private iCal/Google Calendar feed URL lives here
+config.json
+
+# scratch venv used for background removal of fish images
+.bgvenv/
+
+# logs & OS cruft
+*.log
+.DS_Store

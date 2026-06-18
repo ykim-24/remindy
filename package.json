@@ -1,0 +1,18 @@
+{
+  "name": "remindy",
+  "version": "0.1.0",
+  "description": "A draggable pixel desktop pet that pops a chat bubble when its API is hit.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "mcp": "node mcp-server.js"
+  },
+  "devDependencies": {
+    "electron": "^32.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "marked": "^18.0.4",
+    "node-ical": "^0.26.1"
+  }
+}
