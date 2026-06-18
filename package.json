@@ -5,7 +5,9 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "mcp": "node mcp-server.js"
+    "mcp": "node mcp-server.js",
+    "setup-claude": "bash scripts/setup-claude.sh",
+    "unsetup-claude": "bash scripts/setup-claude.sh --uninstall"
   },
   "devDependencies": {
     "electron": "^32.0.0"

@@ -91,11 +91,51 @@ curl http://127.0.0.1:4747/health
 | `message` | string | `👋`    | Bubble text (max 280 chars)    |
 | `ttl`     | number | `8000`  | How long the bubble stays (ms) |
 
-## MCP
+## Claude Code integration (optional)
 
-`mcp-server.js` exposes a `remind` tool over stdio that calls the HTTP API, so an
-agent can make the pet talk. Register it with your MCP client, pointing at the
-absolute path on your machine:
+Make the fish **narrate your Claude Code sessions** — it pops a bubble with
+Claude's last message every time Claude finishes a reply, and exposes a `remind`
+tool Claude can call directly.
+
+One command wires both up:
+
+```bash
+npm run setup-claude
+```
+
+This:
+
+1. Registers the **`remindy` MCP server** (the `remind` tool) at user scope via
+   the `claude` CLI.
+2. Adds a **Stop hook** to `~/.claude/settings.json` that POSTs Claude's last
+   message to the fish (`claude/notify-fish.py`).
+
+It's idempotent (safe to re-run) and backs up your `settings.json` first. Then
+keep `npm start` running and restart Claude Code. To undo it all:
+
+```bash
+npm run unsetup-claude
+```
+
+> Don't use the `claude` CLI? The hook still works — just add this to your
+> `~/.claude/settings.json` by hand (use the absolute path to your clone):
+>
+> ```json
+> {
+>   "hooks": {
+>     "Stop": [
+>       { "matcher": "", "hooks": [{ "type": "command",
+>         "command": "python3 \"/path/to/remindy/claude/notify-fish.py\" 2>/dev/null || true",
+>         "timeout": 5, "async": true }] }
+>     ]
+>   }
+> }
+> ```
+
+### MCP only
+
+`mcp-server.js` exposes a `remind` tool over stdio that calls the HTTP API. If
+you'd rather register it manually instead of using `npm run setup-claude`:
 
 ```json
 {
