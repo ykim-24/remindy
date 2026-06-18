@@ -131,6 +131,8 @@ menu.addEventListener('click', (e) => {
     window.remindy.quote();
   } else if (action === 'fish') {
     nextFish();
+  } else if (action === 'update') {
+    window.remindy.update();
   } else if (action === 'next' || action === 'today') {
     window.remindy.calendar(action);
   } else if (action === 'mute') {

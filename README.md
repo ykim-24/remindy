@@ -23,7 +23,7 @@ A fish appears at the bottom-right of your screen.
 - **Drag** it anywhere by clicking and holding.
 - **Click** (or right-click) it to open the menu.
 
-To update later:
+To update later, just use **⬆️ Update remindy** in the menu — or do it by hand:
 
 ```bash
 git pull
@@ -40,7 +40,12 @@ Click the fish to open the pixel menu:
 - 🐟 **Next fish** — cycle through fish skins (sturgeon, goldfish, betta,
   angelfish, pufferfish, mandarin, discus, swordfish); your pick is remembered
 - 🔊 **Sound** — toggle the bubble "blub"
+- ⬆️ **Update remindy** — pull the latest version and restart (git clones only)
 - 💤 **Dismiss bubble** / ✕ **Quit**
+
+remindy checks GitHub for a newer version shortly after launch (and every 6h).
+If your clone is behind, the fish pops a bubble — hit **⬆️ Update remindy** and
+it fast-forwards to the latest, reinstalls deps if needed, and restarts itself.
 
 ## Calendar (optional)
 

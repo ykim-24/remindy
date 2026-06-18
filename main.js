@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, screen, clipboard } = require('electron');
 const http = require('http');
 const path = require('path');
+const { exec, execFile } = require('child_process');
 
 const PORT = process.env.REMINDY_PORT ? Number(process.env.REMINDY_PORT) : 4747;
 
@@ -260,6 +261,99 @@ ipcMain.on('set-ignore-mouse', (_e, ignore) => {
   if (win) win.setIgnoreMouseEvents(ignore, { forward: true });
 });
 
+// --- Self-update: compare this checkout against origin/main on GitHub ---
+const REPO = __dirname;
+let updating = false;
+let lastAnnounced = null;
+
+// Run a git subcommand inside the repo, resolving with trimmed stdout.
+function git(args, timeout = 20000) {
+  return new Promise((resolve, reject) => {
+    execFile('git', ['-C', REPO, ...args], { timeout }, (err, stdout) => {
+      if (err) reject(err);
+      else resolve(stdout.toString().trim());
+    });
+  });
+}
+
+// True only if this is a git checkout we can fast-forward (avoids touching
+// installs that aren't git clones, or that have diverging local commits).
+async function isGitClone() {
+  try {
+    await git(['rev-parse', '--is-inside-work-tree']);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Fetch origin/main and, if we're strictly behind it, optionally nudge the user.
+async function checkForUpdate(announce = true) {
+  if (updating) return false;
+  if (!(await isGitClone())) return false;
+  try {
+    await git(['fetch', '--quiet', 'origin', 'main']);
+    const local = await git(['rev-parse', 'HEAD']);
+    const remote = await git(['rev-parse', 'origin/main']);
+    if (local === remote) return false;
+    // Behind only if HEAD is an ancestor of origin/main (not ahead/diverged).
+    try {
+      await git(['merge-base', '--is-ancestor', 'HEAD', 'origin/main']);
+    } catch {
+      return false; // diverged — don't offer to clobber local work
+    }
+    if (announce && remote !== lastAnnounced) {
+      lastAnnounced = remote;
+      sendReminder({
+        message: '🆕 A new version of remindy is available! Open my menu → ⬆️ Update remindy',
+        ttl: 13000,
+      });
+    }
+    return true;
+  } catch {
+    return false; // offline / no remote — skip silently
+  }
+}
+
+// Menu action: fast-forward to origin/main, reinstall deps if needed, relaunch.
+ipcMain.on('update', async () => {
+  if (updating) return;
+  if (!(await isGitClone())) {
+    sendReminder({
+      message: '⬆️ Updates need a git clone. Grab the latest from github.com/ykim-24/remindy',
+      ttl: 10000,
+    });
+    return;
+  }
+  updating = true;
+  sendReminder({ message: '⬆️ Checking for updates…', ttl: 8000 });
+  try {
+    const out = await git(['pull', '--ff-only', 'origin', 'main'], 60000);
+    if (/already up to date/i.test(out)) {
+      sendReminder({ message: '✅ remindy is already on the latest version 🎉', ttl: 7000 });
+      updating = false;
+      return;
+    }
+  } catch {
+    sendReminder({
+      message: '⚠️ Update failed — maybe local changes or no internet. Try `git pull` by hand.',
+      ttl: 11000,
+    });
+    updating = false;
+    return;
+  }
+  // Pick up any dependency changes (cheap no-op when nothing changed).
+  sendReminder({ message: '📦 Updating dependencies…', ttl: 9000 });
+  await new Promise((res) =>
+    exec('npm install --no-audit --no-fund', { cwd: REPO, timeout: 180000 }, () => res())
+  );
+  sendReminder({ message: '✅ Updated! Restarting remindy…', ttl: 4000 });
+  setTimeout(() => {
+    app.relaunch();
+    app.exit(0);
+  }, 1600);
+});
+
 ipcMain.on('quit', () => app.quit());
 
 app.whenReady().then(() => {
@@ -276,6 +370,9 @@ app.whenReady().then(() => {
   setInterval(pollCalendar, 60000);
   // Start the gentle-quote loop (first one fires 10–30 min from now).
   scheduleQuote();
+  // Check for a newer version shortly after launch, then every 6 hours.
+  setTimeout(() => checkForUpdate(true), 8000);
+  setInterval(() => checkForUpdate(true), 6 * 3600 * 1000);
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });

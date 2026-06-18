@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('remindy', {
   calendar: (kind) => ipcRenderer.send('calendar', kind),
   pasteCalendar: () => ipcRenderer.send('paste-calendar'),
   quote: () => ipcRenderer.send('quote'),
+  update: () => ipcRenderer.send('update'),
   setIgnoreMouse: (ignore) => ipcRenderer.send('set-ignore-mouse', ignore),
   quit: () => ipcRenderer.send('quit'),
 });
