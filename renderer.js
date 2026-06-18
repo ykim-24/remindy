@@ -68,6 +68,7 @@ const FISH = [
   'fish/mandarin.png',
   'fish/discus.png',
   'fish/swordfish.png',
+  'fish/puffer-party.png', // 🎉 the birthday puffer
 ];
 let fishIndex = Math.min(parseInt(localStorage.getItem('remindy-fish') || '0', 10) || 0, FISH.length - 1);
 function applyFish() {
