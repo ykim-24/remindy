@@ -60,6 +60,7 @@ window.remindy.onRemind(showReminder);
 
 // ---- Fish skins (cycle through different low-fi fish) ----
 const FISH = [
+  'fish/puffer-party.png', // 🎉 the birthday puffer (default so it shows first)
   'fish.png', // the original sturgeon
   'fish/goldfish.png',
   'fish/betta.png',
@@ -68,15 +69,14 @@ const FISH = [
   'fish/mandarin.png',
   'fish/discus.png',
   'fish/swordfish.png',
-  'fish/puffer-party.png', // 🎉 the birthday puffer
 ];
-let fishIndex = Math.min(parseInt(localStorage.getItem('remindy-fish') || '0', 10) || 0, FISH.length - 1);
+let fishIndex = Math.min(parseInt(localStorage.getItem('remindy-fish-v2') || '0', 10) || 0, FISH.length - 1);
 function applyFish() {
   pet.src = FISH[fishIndex];
 }
 function nextFish() {
   fishIndex = (fishIndex + 1) % FISH.length;
-  localStorage.setItem('remindy-fish', String(fishIndex));
+  localStorage.setItem('remindy-fish-v2', String(fishIndex));
   applyFish();
   // little wiggle to acknowledge the swap
   pet.style.animation = 'none';
@@ -88,8 +88,28 @@ applyFish();
 // ---- Pixel menu ----
 const menu = document.getElementById('menu');
 
+// Last known cursor position (window/client coords), used to anchor the menu.
+let mx = 0;
+let my = 0;
+
+function openMenuAt(x, y) {
+  menu.classList.remove('hidden');
+  // Measure now that it's visible, then place it so it never leaves the window.
+  const r = menu.getBoundingClientRect();
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  let left = Math.min(x, vw - r.width - 4);
+  left = Math.max(4, left);
+  let top = y - r.height - 4; // open upward from the cursor by default
+  if (top < 4) top = Math.min(y + 4, vh - r.height - 4); // not enough room above → drop below
+  top = Math.max(4, top);
+  menu.style.left = left + 'px';
+  menu.style.top = top + 'px';
+}
+
 function toggleMenu() {
-  menu.classList.toggle('hidden');
+  if (menu.classList.contains('hidden')) openMenuAt(mx, my);
+  else menu.classList.add('hidden');
 }
 
 const muteItem = document.getElementById('mute-item');
@@ -133,6 +153,8 @@ pet.addEventListener('mousedown', (e) => {
   moved = false;
   lastX = e.screenX;
   lastY = e.screenY;
+  mx = e.clientX;
+  my = e.clientY;
   e.preventDefault();
 });
 
@@ -154,6 +176,8 @@ window.addEventListener('mouseup', () => {
 // Right-click opens the menu too — never quits.
 pet.addEventListener('contextmenu', (e) => {
   e.preventDefault();
+  mx = e.clientX;
+  my = e.clientY;
   toggleMenu();
 });
 
@@ -172,6 +196,8 @@ function updateClickRegion(x, y) {
 }
 
 window.addEventListener('mousemove', (e) => {
+  mx = e.clientX;
+  my = e.clientY;
   if (dragging) return; // stay solid while dragging so the drag never drops
   updateClickRegion(e.clientX, e.clientY);
 });
