@@ -3,6 +3,11 @@ const http = require('http');
 const path = require('path');
 const { exec, execFile } = require('child_process');
 
+// A desktop pet should never hard-crash with Electron's "JS error" dialog.
+// Catch anything that slips past local try/catch, log it, and keep swimming.
+process.on('uncaughtException', (err) => console.error('uncaughtException:', err));
+process.on('unhandledRejection', (err) => console.error('unhandledRejection:', err));
+
 const PORT = process.env.REMINDY_PORT ? Number(process.env.REMINDY_PORT) : 4747;
 
 let win = null;
@@ -129,6 +134,19 @@ function startServer() {
 
     res.writeHead(404, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: false, error: 'not found' }));
+  });
+
+  // If the port is taken (usually a previous remindy still running), don't let
+  // the unhandled 'error' event crash the whole app — just run without the API.
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(
+        `⚠️ port ${PORT} is in use — another remindy is probably already running. ` +
+          `This pet will swim without its HTTP API.`
+      );
+    } else {
+      console.error('remindy API server error:', err.message);
+    }
   });
 
   server.listen(PORT, '127.0.0.1', () => {
