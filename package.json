@@ -5,6 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "say": "node say.js",
     "mcp": "node mcp-server.js",
     "setup-claude": "bash scripts/setup-claude.sh",
     "unsetup-claude": "bash scripts/setup-claude.sh --uninstall"

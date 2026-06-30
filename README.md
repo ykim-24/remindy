@@ -73,6 +73,18 @@ The poller re-reads it every 60s, so no restart is needed after editing.
 > Google Calendar: Settings → your calendar → *Integrate calendar* → **Secret
 > address in iCal format**. Treat that URL like a password.
 
+## Make it talk: `say`
+
+The quickest way to put words in the fish's mouth — spaces need no quoting:
+
+```bash
+./say hello there, swim on
+./say --ttl=12000 take a deep breath    # optional bubble duration (ms)
+npm run say -- be where your feet are   # via npm (note the --)
+```
+
+It just POSTs to the local API below, so the pet must be running (`npm start`).
+
 ## API
 
 The pet runs a local HTTP server on `http://127.0.0.1:4747` (override with

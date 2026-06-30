@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Thin wrapper so you can just run:  ./say hello there
+exec node "$(dirname "$0")/say.js" "$@"
